@@ -1,2 +1,2 @@
 # NetherGPS
-基于java的bukkit插件
+还没开始...
