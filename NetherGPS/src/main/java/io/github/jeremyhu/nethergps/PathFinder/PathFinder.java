@@ -3,39 +3,52 @@ package io.github.jeremyhu.nethergps.PathFinder;
 import java.util.*;
 
 public class PathFinder {
-    public HashMap<Integer,List<Node>> findpath(int[][] matrix, List<Node> nodes, int src){
-        for(int i = 0;i < nodes.size();i++){  //设置节点索引
-            nodes.get(i).setIndex(i);
-        }
-        List<Node> unchecked = nodes;  //未访问过的节点list
+    private static int inf = Integer.MAX_VALUE;
+    private int[][] path;
+    private int[][] matrix;
 
-        return null;
+    public PathFinder(int[][] matrix) {
+        this.matrix = matrix;
     }
 
-    public static void main(String args[]){
-        int[][] matrix = {{0,4,0,0,0,0,3,0,4,0,0}};
-        System.out.println(getNearestNode(matrix,0));
+    public void floyd(){  //Floyd算法
+        int[][] path = new int[matrix.length][matrix.length];  //创建前驱表
+        for(int i = 0;i < matrix.length;i++){  //初始化前驱表
+            for (int j = 0; j < matrix.length; j++) {
+                path[i][j] = j;
+            }
+        }
+        for (int k = 0; k < matrix.length; k++) {
+            for (int m = 0; m < matrix.length; m++) {
+                for (int n = 0; n < matrix.length; n++) {
+                    int mn = matrix[m][n];
+                    int mk = matrix[m][k];
+                    int kn = matrix[k][n];
+                    int addedPath = (mk == inf || kn == inf)? inf : mk + kn;
+                    if (mn > addedPath) {
+                        //如果经过k顶点路径比原两点路径更短，将两点间权值设为更小的一个
+                        matrix[m][n] = addedPath;
+                        //前驱设置为经过下标为k的顶点
+                        path[m][n] = path[m][k];
+                    }
+                }
+            }
+        }
+        this.path = path;
     }
 
-    private static int getNearestNode(int[][] matrix, int src){  //寻找最近节点
-        List<Integer> distances = new ArrayList<Integer>();
-        for(int j = 0;j < matrix[src].length;j++){  //遍历邻接矩阵中的一维数组
-            distances.add(matrix[src][j]);  //将一维数组中所有元素存入list中
+    public int[][] getPreTable(){
+        return path;
+    }
+
+    public List<Integer> getPath(int src,int dst){  //输入起点索引与终点索引
+        List<Integer> path = new ArrayList<Integer>();
+        int k = this.path[src][dst];
+        while(k != dst){
+            path.add(k);
+            k = this.path[k][dst];
         }
-        List<Integer> sort = new ArrayList<Integer>();
-        for(int i : distances){  //去除距离为0的节点并存入新list
-            if(i != 0){
-                sort.add(i);
-            }
-        }
-        if(sort.size()==0){return -1;}  //该节点没有与其连接的节点
-        sort.sort(Comparator.naturalOrder());  //升序排列，获得最短距离
-        int shortest = sort.get(0);
-        for(int i = 0;i < distances.size();i++){  //遍历list，取出与最短距离对应的节点索引
-            if(shortest == distances.get(i)){
-                return i;
-            }
-        }
-        return -1;
+        path.add(dst);
+        return path;
     }
 }
